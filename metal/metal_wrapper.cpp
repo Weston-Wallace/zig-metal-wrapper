@@ -25,6 +25,22 @@ const char* metal_device_get_name(MetalDevice* device) {
     return nameCopy;
 }
 
+MetalCommandQueue* metal_device_create_command_queue(MetalDevice* device) {
+    if (!device) return nullptr;
+    
+    MTL::Device* mtlDevice = reinterpret_cast<MTL::Device*>(device);
+    MTL::CommandQueue* queue = mtlDevice->newCommandQueue();
+    
+    return reinterpret_cast<MetalCommandQueue*>(queue);
+}
+
+void metal_command_queue_release(MetalCommandQueue* queue) {
+    if (queue) {
+        MTL::CommandQueue* mtlQueue = reinterpret_cast<MTL::CommandQueue*>(queue);
+        mtlQueue->release();
+    }
+}
+
 void metal_device_release(MetalDevice* device) {
     if (device) {
         MTL::Device* mtlDevice = reinterpret_cast<MTL::Device*>(device);

@@ -1,31 +1,29 @@
 const std = @import("std");
-const c = @cImport({
-    @cInclude("metal_wrapper.h");
-});
+const metal = @import("metal");
 
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
 
     // Initialize Metal
-    if (c.metal_init() != 1) {
-        try stdout.print("Failed to initialize Metal\n", .{});
-        return;
-    }
-    defer c.metal_cleanup();
+    try metal.init();
+    defer metal.deinit();
 
     // Create a Metal device
-    const device = c.metal_create_default_device();
-    if (device == null) {
-        try stdout.print("Failed to create Metal device\n", .{});
-        return;
-    }
-    defer c.metal_device_release(device);
+    var device = try metal.Device.createDefault();
+    defer device.deinit();
 
     // Get device name
-    const name = c.metal_device_get_name(device);
-    if (name != null) {
-        try stdout.print("Metal device name: {s}\n", .{name});
-        // Free the string we got from C
-        std.c.free(@constCast(@ptrCast(name)));
-    }
+    const name = try device.getName(allocator);
+    defer allocator.free(name);
+
+    try stdout.print("Metal device name: {s}\n", .{name});
+
+    // Create a command queue
+    var queue = try device.createCommandQueue();
+    defer queue.deinit();
+
+    try stdout.print("Created Metal command queue successfully\n", .{});
 }
