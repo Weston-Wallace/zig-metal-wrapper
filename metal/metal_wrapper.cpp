@@ -48,6 +48,61 @@ void metal_device_release(MetalDevice* device) {
     }
 }
 
+MetalBuffer* metal_device_create_buffer(MetalDevice* device, unsigned long length, ResourceStorageMode mode) {
+    if (!device) return nullptr;
+    
+    MTL::Device* mtlDevice = reinterpret_cast<MTL::Device*>(device);
+    
+    MTL::ResourceOptions options;
+    switch (mode) {
+        case ResourceStorageModeShared:
+            options = MTL::ResourceStorageModeShared;
+            break;
+        case ResourceStorageModeManaged:
+            options = MTL::ResourceStorageModeManaged;
+            break;
+        case ResourceStorageModePrivate:
+            options = MTL::ResourceStorageModePrivate;
+            break;
+        case ResourceStorageModeMemoryless:
+            options = MTL::ResourceStorageModeMemoryless;
+            break;
+        default:
+            options = MTL::ResourceStorageModeShared;
+    }
+    
+    MTL::Buffer* buffer = mtlDevice->newBuffer(length, options);
+    return reinterpret_cast<MetalBuffer*>(buffer);
+}
+
+void* metal_buffer_get_contents(MetalBuffer* buffer) {
+    if (!buffer) return nullptr;
+    
+    MTL::Buffer* mtlBuffer = reinterpret_cast<MTL::Buffer*>(buffer);
+    return mtlBuffer->contents();
+}
+
+unsigned long metal_buffer_get_length(MetalBuffer* buffer) {
+    if (!buffer) return 0;
+    
+    MTL::Buffer* mtlBuffer = reinterpret_cast<MTL::Buffer*>(buffer);
+    return mtlBuffer->length();
+}
+
+void metal_buffer_did_modify_range(MetalBuffer* buffer, unsigned long start, unsigned long length) {
+    if (!buffer) return;
+    
+    MTL::Buffer* mtlBuffer = reinterpret_cast<MTL::Buffer*>(buffer);
+    mtlBuffer->didModifyRange(NS::Range(start, length));
+}
+
+void metal_buffer_release(MetalBuffer* buffer) {
+    if (buffer) {
+        MTL::Buffer* mtlBuffer = reinterpret_cast<MTL::Buffer*>(buffer);
+        mtlBuffer->release();
+    }
+}
+
 void metal_cleanup(void) {
     // Any cleanup if needed
 }

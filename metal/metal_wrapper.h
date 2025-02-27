@@ -8,6 +8,15 @@ extern "C" {
 // Opaque pointers to Metal objects
 typedef struct MetalDevice MetalDevice;
 typedef struct MetalCommandQueue MetalCommandQueue;
+typedef struct MetalBuffer MetalBuffer;
+
+// Resource storage modes
+typedef enum {
+    ResourceStorageModeShared = 0,
+    ResourceStorageModeManaged = 1,
+    ResourceStorageModePrivate = 2,
+    ResourceStorageModeMemoryless = 3
+} ResourceStorageMode;
 
 // Initialize Metal
 int metal_init(void);
@@ -26,6 +35,13 @@ void metal_command_queue_release(MetalCommandQueue* queue);
 
 // Release a Metal device
 void metal_device_release(MetalDevice* device);
+
+// Buffer functions
+MetalBuffer* metal_device_create_buffer(MetalDevice* device, unsigned long length, ResourceStorageMode mode);
+void* metal_buffer_get_contents(MetalBuffer* buffer);
+unsigned long metal_buffer_get_length(MetalBuffer* buffer);
+void metal_buffer_did_modify_range(MetalBuffer* buffer, unsigned long start, unsigned long length);
+void metal_buffer_release(MetalBuffer* buffer);
 
 // Clean up Metal
 void metal_cleanup(void);

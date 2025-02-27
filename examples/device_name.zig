@@ -20,10 +20,4 @@ pub fn main() !void {
     defer allocator.free(name);
 
     try stdout.print("Metal device name: {s}\n", .{name});
-
-    // Create a command queue
-    var queue = try device.createCommandQueue();
-    defer queue.deinit();
-
-    try stdout.print("Created Metal command queue successfully\n", .{});
 }

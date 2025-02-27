@@ -1,10 +1,43 @@
 const std = @import("std");
 
+const examples = [_][]const u8{
+    "buffer",
+    "device_name",
+};
+
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Create a static library for the Metal wrapper
+    // Create and configure the Metal library
+    const metal_lib = createMetalLibrary(b, target, optimize);
+
+    // Create the Metal module
+    const metal_module = createMetalModule(b, metal_lib);
+
+    // Create examples
+    inline for (examples) |example| {
+        const name = std.fmt.comptimePrint("{s}-example", .{example});
+        const source_path = std.fmt.comptimePrint("examples/{s}.zig", .{example});
+        const run_step_name = std.fmt.comptimePrint("run-{s}-example", .{example});
+        const run_step_description = std.fmt.comptimePrint("Run the {s} example", .{example});
+        createExample(
+            b,
+            name,
+            source_path,
+            metal_module,
+            run_step_name,
+            run_step_description,
+            target,
+            optimize,
+        );
+    }
+
+    // Add unit tests
+    createTests(b, metal_lib, target, optimize);
+}
+
+fn createMetalLibrary(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode) *std.Build.Step.Compile {
     const metal_lib = b.addStaticLibrary(.{
         .name = "zigmetal",
         .root_source_file = b.path("src/metal.zig"),
@@ -24,9 +57,7 @@ pub fn build(b: *std.Build) void {
     });
 
     // Link frameworks
-    metal_lib.linkFramework("Foundation");
-    metal_lib.linkFramework("Metal");
-    metal_lib.linkFramework("QuartzCore");
+    linkMetalFrameworks(metal_lib);
 
     metal_lib.linkLibC();
     metal_lib.linkLibCpp();
@@ -34,7 +65,10 @@ pub fn build(b: *std.Build) void {
     // Install the library
     b.installArtifact(metal_lib);
 
-    // Create the Metal module
+    return metal_lib;
+}
+
+fn createMetalModule(b: *std.Build, metal_lib: *std.Build.Step.Compile) *std.Build.Module {
     const metal_module = b.addModule("metal", .{
         .root_source_file = b.path("src/metal.zig"),
     });
@@ -45,10 +79,22 @@ pub fn build(b: *std.Build) void {
     // Link the library with the executable
     metal_module.linkLibrary(metal_lib);
 
-    // Create example executable
+    return metal_module;
+}
+
+fn createExample(
+    b: *std.Build,
+    name: []const u8,
+    source_path: []const u8,
+    metal_module: *std.Build.Module,
+    run_step_name: []const u8,
+    run_step_description: []const u8,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+) void {
     const exe = b.addExecutable(.{
-        .name = "zig-metal-app",
-        .root_source_file = b.path("src/main.zig"),
+        .name = name,
+        .root_source_file = b.path(source_path),
         .target = target,
         .optimize = optimize,
     });
@@ -63,10 +109,11 @@ pub fn build(b: *std.Build) void {
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
 
-    const run_step = b.step("run", "Run the application");
+    const run_step = b.step(run_step_name, run_step_description);
     run_step.dependOn(&run_cmd.step);
+}
 
-    // Add unit tests
+fn createTests(b: *std.Build, metal_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode) void {
     const lib_tests = b.addTest(.{
         .root_source_file = b.path("src/metal.zig"),
         .target = target,
@@ -76,6 +123,17 @@ pub fn build(b: *std.Build) void {
     lib_tests.addIncludePath(b.path("metal"));
     lib_tests.linkLibrary(metal_lib);
 
+    // Link necessary frameworks and libraries
+    linkMetalFrameworks(lib_tests);
+    lib_tests.linkLibC();
+    lib_tests.linkLibCpp();
+
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&b.addRunArtifact(lib_tests).step);
+}
+
+fn linkMetalFrameworks(step: *std.Build.Step.Compile) void {
+    step.linkFramework("Foundation");
+    step.linkFramework("Metal");
+    step.linkFramework("QuartzCore");
 }

@@ -4,6 +4,7 @@ const c = @cImport({
 });
 
 const CommandQueue = @import("CommandQueue.zig");
+const Buffer = @import("Buffer.zig");
 const MetalError = @import("error.zig").MetalError;
 const utils = @import("utils.zig");
 
@@ -63,6 +64,16 @@ pub fn createCommandQueue(self: Device) MetalError!CommandQueue {
     return CommandQueue{ .handle = queue_ptr };
 }
 
+/// Create a buffer with the specified length and storage mode
+pub fn createBuffer(self: Device, length: usize, mode: Buffer.ResourceStorageMode) MetalError!Buffer {
+    const buffer_ptr = c.metal_device_create_buffer(self.handle, length, @intFromEnum(mode));
+    if (buffer_ptr == null) {
+        return MetalError.BufferCreationFailed;
+    }
+
+    return Buffer{ .handle = buffer_ptr };
+}
+
 /// Release the Metal device
 pub fn deinit(self: Device) void {
     c.metal_device_release(self.handle);
@@ -85,4 +96,20 @@ test "Device basic functionality" {
 
     // Verify name is not empty
     try std.testing.expect(name.len > 0);
+}
+
+test "Buffer creation" {
+    const metal = @import("../metal.zig");
+    try metal.init();
+    defer metal.deinit();
+
+    var device = try Device.createDefault();
+    defer device.deinit();
+
+    // Create a buffer
+    var buffer = try device.createBuffer(1024, .Shared);
+    defer buffer.deinit();
+
+    // Verify buffer length
+    try std.testing.expectEqual(@as(usize, 1024), buffer.getLength());
 }

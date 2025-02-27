@@ -3,6 +3,7 @@ const std = @import("std");
 // Re-export everything
 pub const Device = @import("metal/Device.zig");
 pub const CommandQueue = @import("metal/CommandQueue.zig");
+pub const Buffer = @import("metal/Buffer.zig");
 pub const MetalError = @import("metal/error.zig").MetalError;
 pub const freeCString = @import("metal/utils.zig").freeCString;
 
