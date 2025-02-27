@@ -28,48 +28,48 @@ The wrapper currently provides basic initialization and device management:
 
 ### Phase 2: Buffer Management
 
--   [ ] Create wrapper for MTLBuffer
-    -   [ ] Create buffers (device memory)
-    -   [ ] Map/unmap buffers for CPU access
-    -   [ ] Copy data between CPU and GPU
-    -   [ ] Handle different storage modes
+-   [x] Create wrapper for MTLBuffer
+-   [x] Create buffers (device memory)
+-   [x] Map/unmap buffers for CPU access
+-   [x] Copy data between CPU and GPU
+-   [x] Handle different storage modes
 
 ### Phase 3: Shader Management
 
 -   [ ] Add support for loading Metal shaders
-    -   [ ] Load shader source from string
-    -   [ ] Compile shaders at runtime
-    -   [ ] Error reporting for shader compilation
-    -   [ ] Extract compute functions
+-   [ ] Load shader source from string
+-   [ ] Compile shaders at runtime
+-   [ ] Error reporting for shader compilation
+-   [ ] Extract compute functions
 
 ### Phase 4: Compute Pipeline Creation
 
 -   [ ] Create compute pipeline state objects
-    -   [ ] Pipeline configuration
-    -   [ ] Thread group size management
-    -   [ ] Pipeline state caching
+-   [ ] Pipeline configuration
+-   [ ] Thread group size management
+-   [ ] Pipeline state caching
 
 ### Phase 5: Command Encoding
 
 -   [ ] Command buffer creation
-    -   [ ] Compute command encoder
-    -   [ ] Setting compute pipeline
-    -   [ ] Setting buffer arguments
-    -   [ ] Dispatching compute work
+-   [ ] Compute command encoder
+-   [ ] Setting compute pipeline
+-   [ ] Setting buffer arguments
+-   [ ] Dispatching compute work
 
 ### Phase 6: Execution and Synchronization
 
 -   [ ] Command buffer submission
-    -   [ ] Synchronous execution
-    -   [ ] Asynchronous execution with completion handlers
-    -   [ ] Handling computation results
+-   [ ] Synchronous execution
+-   [ ] Asynchronous execution with completion handlers
+-   [ ] Handling computation results
 
 ### Phase 7: Error Handling and Examples
 
 -   [ ] Comprehensive error handling
 -   [ ] Create example compute shaders
-    -   [ ] Simple array operations
-    -   [ ] More complex compute examples
+-   [ ] Simple array operations
+-   [ ] More complex compute examples
 
 ### Phase 8: Advanced Features (Optional)
 
