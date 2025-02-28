@@ -13,46 +13,6 @@ handle: ?*c.MetalLibrary,
 /// Handle to the device that created this library (needed when creating functions)
 device_handle: ?*c.MetalDevice,
 
-/// Create a Metal shader library from source code
-pub fn createFromSource(device: Device, source: []const u8, allocator: std.mem.Allocator) MetalError!struct {
-    library: Library,
-    error_msg: ?[]const u8,
-} {
-    // Create a null-terminated copy of the source
-    const c_source = try allocator.dupeZ(u8, source);
-    defer allocator.free(c_source);
-
-    var error_ptr: ?[*c]u8 = null;
-    const library_ptr = c.metal_device_create_library_from_source(device.handle, c_source.ptr, @ptrCast(&error_ptr));
-
-    // Handle possible compilation error
-    if (library_ptr == null) {
-        if (error_ptr != null) {
-            // We have an error message - create a Zig string from it
-            const error_c_str = std.mem.span(error_ptr.?);
-            const error_str = try allocator.dupe(u8, error_c_str);
-            utils.freeCString(error_ptr.?);
-
-            return .{
-                .library = Library{
-                    .handle = null,
-                    .device_handle = device.handle,
-                },
-                .error_msg = error_str,
-            };
-        }
-        return MetalError.LibraryCreationFailed;
-    }
-
-    return .{
-        .library = Library{
-            .handle = library_ptr,
-            .device_handle = device.handle,
-        },
-        .error_msg = null,
-    };
-}
-
 /// Get a function from the library by name
 pub fn getFunction(self: Library, name: []const u8, allocator: std.mem.Allocator) MetalError!Function {
     // Create a null-terminated copy of the name

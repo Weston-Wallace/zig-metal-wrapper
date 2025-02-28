@@ -12,9 +12,9 @@ const shader_source =
     \\    data[id] = data[id] * 2.0;
     \\}
 ;
+const stdout = std.io.getStdOut().writer();
 
 pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
@@ -31,7 +31,7 @@ pub fn main() !void {
 
     // Create a shader library from the source
     try stdout.print("Compiling shader...\n", .{});
-    const result = try metal.Library.createFromSource(device, shader_source, allocator);
+    const result = try device.createLibraryFromSource(shader_source, allocator);
 
     // Handle compilation errors
     if (result.error_msg) |err_msg| {
@@ -40,10 +40,24 @@ pub fn main() !void {
         return error.ShaderCompilationFailed;
     }
 
-    var library = result.library;
-    defer library.deinit();
+    var str_library = result.library;
+    defer str_library.deinit();
     try stdout.print("Shader compiled successfully\n", .{});
 
+    try runLibrary(str_library, device, allocator);
+
+    // Create a shader library from a file
+    try stdout.print("Compiling shader from file...\n", .{});
+    const file_result = try device.createLibraryFromFile("shaders/double_values.metal", allocator);
+
+    var file_library = file_result.library;
+    defer file_library.deinit();
+    try stdout.print("Shader compiled from file successfully\n", .{});
+
+    try runLibrary(file_library, device, allocator);
+}
+
+fn runLibrary(library: metal.Library, device: metal.Device, allocator: std.mem.Allocator) !void {
     // Get the compute function
     try stdout.print("Getting compute function...\n", .{});
     var function = try library.getFunction("double_values", allocator);

@@ -56,7 +56,7 @@ pub fn main() !void {
     try stdout.print("  Attempt to compile invalid shader:\n", .{});
 
     // Try to compile an invalid shader and catch the error
-    if (metal.Library.createFromSource(device, invalid_shader_source, allocator)) |shader_result| {
+    if (device.createLibraryFromSource(invalid_shader_source, allocator)) |shader_result| {
         if (shader_result.error_msg) |err_msg| {
             defer allocator.free(err_msg);
             try stdout.print("❌ Shader compilation failed (expected) with error:\n", .{});
@@ -85,7 +85,7 @@ pub fn main() !void {
         \\}
     ;
 
-    const valid_result = try metal.Library.createFromSource(device, valid_shader, allocator);
+    const valid_result = try device.createLibraryFromSource(valid_shader, allocator);
     if (valid_result.error_msg) |err_msg| {
         defer allocator.free(err_msg);
         try stdout.print("❌ Valid shader compilation failed unexpectedly: {s}\n", .{err_msg});

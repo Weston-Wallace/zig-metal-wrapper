@@ -174,7 +174,7 @@ pub fn main() !void {
 
     // Compile the shader
     try stdout.print("Compiling matrix multiplication shader...\n", .{});
-    const result_lib = try metal.Library.createFromSource(device, shader_source, allocator);
+    const result_lib = try device.createLibraryFromSource(shader_source, allocator);
 
     // Check for compilation errors
     if (result_lib.error_msg) |err_msg| {

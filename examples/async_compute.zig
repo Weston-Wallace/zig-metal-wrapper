@@ -48,7 +48,7 @@ pub fn main() !void {
 
     // Create a shader library from the source
     try stdout.print("Compiling shader...\n", .{});
-    const result = try metal.Library.createFromSource(device, shader_source, allocator);
+    const result = try device.createLibraryFromSource(shader_source, allocator);
 
     // Handle compilation errors
     if (result.error_msg) |err_msg| {

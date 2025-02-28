@@ -3,6 +3,7 @@ const c = @cImport({
     @cInclude("metal_wrapper.h");
 });
 
+const Library = @import("Library.zig");
 const CommandQueue = @import("CommandQueue.zig");
 const Buffer = @import("Buffer.zig");
 const MetalError = @import("error.zig").MetalError;
@@ -52,6 +53,74 @@ pub fn getName(self: Device, allocator: std.mem.Allocator) MetalError![]const u8
     utils.freeCString(name_ptr);
 
     return result;
+}
+
+pub const CreateLibraryResult = struct {
+    library: Library,
+    error_msg: ?[]const u8,
+};
+
+/// Create a Metal shader library from source code
+/// Caller is responsible for freeing error_msg if not null
+pub fn createLibraryFromSource(self: Device, source: []const u8, allocator: std.mem.Allocator) MetalError!CreateLibraryResult {
+    // Create a null-terminated copy of the source
+    const c_source = try allocator.dupeZ(u8, source);
+    defer allocator.free(c_source);
+
+    var error_ptr: ?[*c]u8 = null;
+    const library_ptr = c.metal_device_create_library_from_source(self.handle, c_source.ptr, @ptrCast(&error_ptr));
+
+    // Handle possible compilation error
+    if (library_ptr == null) {
+        if (error_ptr != null) {
+            // We have an error message - create a Zig string from it
+            const error_c_str = std.mem.span(error_ptr.?);
+            const error_str = try allocator.dupe(u8, error_c_str);
+            utils.freeCString(error_ptr.?);
+
+            return .{
+                .library = Library{
+                    .handle = null,
+                    .device_handle = self.handle,
+                },
+                .error_msg = error_str,
+            };
+        }
+        return MetalError.LibraryCreationFailed;
+    }
+
+    return .{
+        .library = Library{
+            .handle = library_ptr,
+            .device_handle = self.handle,
+        },
+        .error_msg = null,
+    };
+}
+
+/// Load a Metal shader from a file on disk
+/// Caller is responsible for freeing error_msg if not null
+pub fn createLibraryFromFile(
+    device: Device,
+    file_path: []const u8,
+    allocator: std.mem.Allocator,
+) MetalError!CreateLibraryResult {
+    // Open the shader file
+    const file = std.fs.cwd().openFile(file_path, .{}) catch |err| {
+        std.log.err("Failed to open shader file '{s}': {s}", .{ file_path, @errorName(err) });
+        return MetalError.InvalidShaderSource;
+    };
+    defer file.close();
+
+    // Read the file contents
+    const source = file.readToEndAlloc(allocator, 1024 * 1024) catch |err| {
+        std.log.err("Failed to read shader file '{s}': {s}", .{ file_path, @errorName(err) });
+        return MetalError.InvalidShaderSource;
+    };
+    defer allocator.free(source);
+
+    // Compile the shader
+    return device.createLibraryFromSource(source, allocator);
 }
 
 /// Create a command queue for submitting commands to the device
