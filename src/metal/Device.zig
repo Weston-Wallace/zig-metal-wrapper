@@ -151,10 +151,6 @@ pub fn deinit(self: Device) void {
 const Device = @This();
 
 test "Device basic functionality" {
-    const metal = @import("../metal.zig");
-    try metal.init();
-    defer metal.deinit();
-
     var device = try Device.createDefault();
     defer device.deinit();
 
