@@ -77,12 +77,14 @@ fn cpuMatrixMultiply(a: []const f32, b: []const f32, result: []f32, m: usize, n:
     }
 }
 
-/// Compare matrices with a small tolerance for floating point differences
+/// Compare matrices with a small relative tolerance for floating point differences
 fn compareMatrices(a: []const f32, b: []const f32, tolerance: f32) bool {
     if (a.len != b.len) return false;
 
     for (0..a.len) |i| {
-        if (@abs(a[i] - b[i]) > tolerance) {
+        const abs_diff = @abs(a[i] - b[i]);
+        const rel_diff = abs_diff / @max(0.000001, @abs(a[i]));
+        if (rel_diff > tolerance) {
             std.debug.print("Difference at index {d}: {d} vs {d}\n", .{ i, a[i], b[i] });
             return false;
         }
