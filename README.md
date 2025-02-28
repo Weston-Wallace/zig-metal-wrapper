@@ -36,11 +36,11 @@ The wrapper currently provides basic initialization and device management:
 
 ### Phase 3: Shader Management
 
--   [ ] Add support for loading Metal shaders
--   [ ] Load shader source from string
--   [ ] Compile shaders at runtime
--   [ ] Error reporting for shader compilation
--   [ ] Extract compute functions
+-   [x] Add support for loading Metal shaders
+-   [x] Load shader source from string
+-   [x] Compile shaders at runtime
+-   [x] Error reporting for shader compilation
+-   [x] Extract compute functions
 
 ### Phase 4: Compute Pipeline Creation
 

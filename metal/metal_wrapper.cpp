@@ -103,6 +103,72 @@ void metal_buffer_release(MetalBuffer* buffer) {
     }
 }
 
+// Shader management functions
+MetalLibrary* metal_device_create_library_from_source(MetalDevice* device, const char* source, char** error_msg) {
+    if (!device || !source) return nullptr;
+    
+    MTL::Device* mtlDevice = reinterpret_cast<MTL::Device*>(device);
+    NS::Error* error = nullptr;
+    
+    // Create a NSString from the C string
+    NS::String* sourceStr = NS::String::string(source, NS::StringEncoding::UTF8StringEncoding);
+    if (!sourceStr) return nullptr;
+    
+    // Create a Metal library from the source string
+    MTL::Library* library = mtlDevice->newLibrary(sourceStr, nullptr, &error);
+    
+    // Handle error if compilation failed
+    if (error && error_msg) {
+        const char* errorStr = error->localizedDescription()->utf8String();
+        *error_msg = strdup(errorStr);
+        if (error) error->release();
+        return nullptr;
+    }
+    
+    if (error) {
+        if (error) error->release();
+    }
+    
+    return reinterpret_cast<MetalLibrary*>(library);
+}
+
+MetalFunction* metal_library_get_function(MetalLibrary* library, const char* name) {
+    if (!library || !name) return nullptr;
+    
+    MTL::Library* mtlLibrary = reinterpret_cast<MTL::Library*>(library);
+    NS::String* nameStr = NS::String::string(name, NS::StringEncoding::UTF8StringEncoding);
+    if (!nameStr) return nullptr;
+    
+    MTL::Function* function = mtlLibrary->newFunction(nameStr);
+    
+    return reinterpret_cast<MetalFunction*>(function);
+}
+
+void metal_library_release(MetalLibrary* library) {
+    if (library) {
+        MTL::Library* mtlLibrary = reinterpret_cast<MTL::Library*>(library);
+        mtlLibrary->release();
+    }
+}
+
+void metal_function_release(MetalFunction* function) {
+    if (function) {
+        MTL::Function* mtlFunction = reinterpret_cast<MTL::Function*>(function);
+        mtlFunction->release();
+    }
+}
+
+const char* metal_function_get_name(MetalFunction* function) {
+    if (!function) return nullptr;
+    
+    MTL::Function* mtlFunction = reinterpret_cast<MTL::Function*>(function);
+    const char* originalName = mtlFunction->name()->utf8String();
+    
+    // We need to create a copy that the caller can free
+    char* nameCopy = strdup(originalName);
+    return nameCopy;
+}
+
 void metal_cleanup(void) {
     // Any cleanup if needed
 }

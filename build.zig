@@ -3,6 +3,7 @@ const std = @import("std");
 const examples = [_][]const u8{
     "buffer",
     "device_name",
+    "shader",
 };
 
 pub fn build(b: *std.Build) void {
