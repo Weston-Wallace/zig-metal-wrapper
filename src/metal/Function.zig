@@ -5,9 +5,12 @@ const c = @cImport({
 
 const MetalError = @import("error.zig").MetalError;
 const utils = @import("utils.zig");
+const ComputePipelineState = @import("ComputePipelineState.zig");
 
 /// Handle to the underlying Metal function
 handle: ?*c.MetalFunction,
+/// Handle to the device that created this function (needed for creating pipeline states)
+device_handle: ?*c.MetalDevice,
 
 /// Get the name of the function
 /// Caller owns the returned memory and must free it with allocator.free()
@@ -36,6 +39,11 @@ pub fn getName(self: Function, allocator: std.mem.Allocator) MetalError![]const 
 /// Release the Metal function
 pub fn deinit(self: Function) void {
     c.metal_function_release(self.handle);
+}
+
+/// Create a compute pipeline state for this function
+pub fn createComputePipelineState(self: Function) MetalError!ComputePipelineState {
+    return ComputePipelineState.create(self);
 }
 
 const Function = @This();

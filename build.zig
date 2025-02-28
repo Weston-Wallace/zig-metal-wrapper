@@ -4,6 +4,9 @@ const examples = [_][]const u8{
     "buffer",
     "device_name",
     "shader",
+    "async_compute",
+    "matrix_multiply",
+    "error_handling",
 };
 
 pub fn build(b: *std.Build) void {

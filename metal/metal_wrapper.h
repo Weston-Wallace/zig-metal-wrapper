@@ -11,6 +11,9 @@ typedef struct MetalCommandQueue MetalCommandQueue;
 typedef struct MetalBuffer MetalBuffer;
 typedef struct MetalLibrary MetalLibrary;
 typedef struct MetalFunction MetalFunction;
+typedef struct MetalComputePipelineState MetalComputePipelineState;
+typedef struct MetalCommandBuffer MetalCommandBuffer;
+typedef struct MetalComputeCommandEncoder MetalComputeCommandEncoder;
 
 // Resource storage modes
 typedef enum {
@@ -51,6 +54,29 @@ MetalFunction* metal_library_get_function(MetalLibrary* library, const char* nam
 void metal_library_release(MetalLibrary* library);
 void metal_function_release(MetalFunction* function);
 const char* metal_function_get_name(MetalFunction* function);
+
+// Compute pipeline functions
+MetalComputePipelineState* metal_device_new_compute_pipeline_state(MetalDevice* device, MetalFunction* function, char** error_msg);
+void metal_compute_pipeline_state_release(MetalComputePipelineState* state);
+
+// Callback function type for command buffer completion
+typedef void (*MetalCommandBufferCallback)(void* context);
+
+// Command buffer functions
+MetalCommandBuffer* metal_command_queue_create_command_buffer(MetalCommandQueue* queue);
+void metal_command_buffer_commit(MetalCommandBuffer* buffer);
+void metal_command_buffer_commit_with_callback(MetalCommandBuffer* buffer, MetalCommandBufferCallback callback, void* context);
+void metal_command_buffer_wait_until_completed(MetalCommandBuffer* buffer);
+int metal_command_buffer_get_status(MetalCommandBuffer* buffer); // 0=not-committed, 1=committed, 2=scheduled, 3=completed, 4=error
+void metal_command_buffer_release(MetalCommandBuffer* buffer);
+
+// Compute command encoder functions
+MetalComputeCommandEncoder* metal_command_buffer_create_compute_command_encoder(MetalCommandBuffer* buffer);
+void metal_compute_command_encoder_set_compute_pipeline_state(MetalComputeCommandEncoder* encoder, MetalComputePipelineState* state);
+void metal_compute_command_encoder_set_buffer(MetalComputeCommandEncoder* encoder, MetalBuffer* buffer, unsigned long offset, unsigned int index);
+void metal_compute_command_encoder_dispatch_threads(MetalComputeCommandEncoder* encoder, unsigned int threadCountX, unsigned int threadCountY, unsigned int threadCountZ);
+void metal_compute_command_encoder_end_encoding(MetalComputeCommandEncoder* encoder);
+void metal_compute_command_encoder_release(MetalComputeCommandEncoder* encoder);
 
 // Clean up Metal
 void metal_cleanup(void);

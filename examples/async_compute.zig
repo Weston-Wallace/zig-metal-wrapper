@@ -1,7 +1,7 @@
 const std = @import("std");
 const metal = @import("metal");
 
-// Simple compute shader that doubles each value in an array
+/// Simple compute shader that doubles each value in an array
 const shader_source =
     \\#include <metal_stdlib>
     \\using namespace metal;
@@ -12,6 +12,23 @@ const shader_source =
     \\    data[id] = data[id] * 2.0;
     \\}
 ;
+
+// Global variables to track completion
+var completion_signaled: bool = false;
+var waiting_thread: ?std.Thread = null;
+
+// Callback function called when compute operation completes
+fn computeCompletionCallback(context: ?*anyopaque) void {
+    _ = context; // We don't use the context in this example
+    completion_signaled = true;
+    
+    if (waiting_thread) |thread| {
+        thread.detach();
+    }
+    
+    // Print that the operation is complete
+    std.debug.print("🎉 Async compute operation completed!\n", .{});
+}
 
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
@@ -53,11 +70,12 @@ pub fn main() !void {
     var function = try library.getFunction("double_values", allocator);
     defer function.deinit();
 
-    // Get and print the function name
-    const func_name = try function.getName(allocator);
-    defer allocator.free(func_name);
-    try stdout.print("Got compute function: {s}\n", .{func_name});
-
+    // Create a compute pipeline state object
+    try stdout.print("Creating compute pipeline state...\n", .{});
+    var pipeline_state = try function.createComputePipelineState();
+    defer pipeline_state.deinit();
+    try stdout.print("Compute pipeline state created\n", .{});
+    
     // Create a buffer with some test data
     const buffer_size = 4 * @sizeOf(f32); // 4 floats
     var buffer = try device.createBuffer(buffer_size, .Shared);
@@ -81,12 +99,6 @@ pub fn main() !void {
         try stdout.print("{d:.1} ", .{value});
     }
     try stdout.print("\n", .{});
-
-    // Create a compute pipeline state object
-    try stdout.print("\nCreating compute pipeline state...\n", .{});
-    var pipeline_state = try function.createComputePipelineState();
-    defer pipeline_state.deinit();
-    try stdout.print("Compute pipeline state created\n", .{});
     
     // Create a command queue
     try stdout.print("Creating command queue...\n", .{});
@@ -116,23 +128,43 @@ pub fn main() !void {
     // End encoding
     encoder.endEncoding();
     
-    // Commit the command buffer
-    try stdout.print("Committing command buffer...\n", .{});
-    command_buffer.commit();
+    // Setup completion callback
+    var completion_callback = metal.CommandBuffer.CompletionCallback{
+        .callback = computeCompletionCallback,
+        .context = null,
+    };
     
-    // Wait for completion
-    try stdout.print("Waiting for completion...\n", .{});
-    command_buffer.waitUntilCompleted();
+    // Commit the command buffer with callback
+    try stdout.print("Committing command buffer with async callback...\n", .{});
+    command_buffer.commitWithCallback(&completion_callback);
     
-    // Read back the results
-    try stdout.print("Reading back results...\n", .{});
+    // Wait a bit to show we're continuing execution while GPU works
+    try stdout.print("Command buffer committed, continuing CPU work while GPU executes...\n", .{});
+    
+    // Do some "work" on the CPU side
+    for (0..3) |i| {
+        try stdout.print("CPU doing work cycle {d}...\n", .{i + 1});
+        std.time.sleep(std.time.ns_per_s / 2); // Sleep for 0.5 seconds
+        
+        // Check if the GPU work has completed
+        const status = command_buffer.getStatus();
+        try stdout.print("Command buffer status: {any}\n", .{status});
+    }
+    
+    // If still not complete, wait for completion
+    if (!completion_signaled) {
+        try stdout.print("Still waiting for GPU work to complete...\n", .{});
+        command_buffer.waitUntilCompleted();
+    }
+    
+    // Print final values
     try stdout.print("Final values: ", .{});
     for (float_data) |value| {
         try stdout.print("{d:.1} ", .{value});
     }
     try stdout.print("\n", .{});
     
-    // Verify the results - each value should be doubled
+    // Verify the results
     try stdout.print("Verifying results...\n", .{});
     if (float_data[0] == 2.0 and 
         float_data[1] == 4.0 and 

@@ -10,6 +10,8 @@ const utils = @import("utils.zig");
 
 /// Handle to the underlying Metal library
 handle: ?*c.MetalLibrary,
+/// Handle to the device that created this library (needed when creating functions)
+device_handle: ?*c.MetalDevice,
 
 /// Create a Metal shader library from source code
 pub fn createFromSource(device: Device, source: []const u8, allocator: std.mem.Allocator) MetalError!struct {
@@ -32,7 +34,10 @@ pub fn createFromSource(device: Device, source: []const u8, allocator: std.mem.A
             utils.freeCString(error_ptr.?);
 
             return .{
-                .library = Library{ .handle = null },
+                .library = Library{ 
+                    .handle = null,
+                    .device_handle = device.handle,
+                },
                 .error_msg = error_str,
             };
         }
@@ -40,7 +45,10 @@ pub fn createFromSource(device: Device, source: []const u8, allocator: std.mem.A
     }
 
     return .{
-        .library = Library{ .handle = library_ptr },
+        .library = Library{ 
+            .handle = library_ptr,
+            .device_handle = device.handle,
+        },
         .error_msg = null,
     };
 }
@@ -56,7 +64,10 @@ pub fn getFunction(self: Library, name: []const u8, allocator: std.mem.Allocator
         return MetalError.FunctionNotFound;
     }
 
-    return Function{ .handle = function_ptr };
+    return Function{ 
+        .handle = function_ptr,
+        .device_handle = self.device_handle,
+    };
 }
 
 /// Release the Metal library

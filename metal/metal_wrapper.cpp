@@ -169,6 +169,158 @@ const char* metal_function_get_name(MetalFunction* function) {
     return nameCopy;
 }
 
+// Compute pipeline functions
+MetalComputePipelineState* metal_device_new_compute_pipeline_state(MetalDevice* device, MetalFunction* function, char** error_msg) {
+    if (!device || !function) return nullptr;
+    
+    MTL::Device* mtlDevice = reinterpret_cast<MTL::Device*>(device);
+    MTL::Function* mtlFunction = reinterpret_cast<MTL::Function*>(function);
+    NS::Error* error = nullptr;
+    
+    MTL::ComputePipelineState* pipelineState = mtlDevice->newComputePipelineState(mtlFunction, &error);
+    
+    // Handle error if pipeline creation failed
+    if (error && error_msg) {
+        const char* errorStr = error->localizedDescription()->utf8String();
+        *error_msg = strdup(errorStr);
+        error->release();
+        return nullptr;
+    }
+    
+    if (error) {
+        error->release();
+    }
+    
+    return reinterpret_cast<MetalComputePipelineState*>(pipelineState);
+}
+
+void metal_compute_pipeline_state_release(MetalComputePipelineState* state) {
+    if (state) {
+        MTL::ComputePipelineState* mtlState = reinterpret_cast<MTL::ComputePipelineState*>(state);
+        mtlState->release();
+    }
+}
+
+// Callback structure to hold the user callback and context
+struct CallbackContext {
+    MetalCommandBufferCallback user_callback;
+    void* user_context;
+};
+
+// Static callback function for the Metal completion handler
+static void metal_completion_handler(void* context) {
+    CallbackContext* callback_context = static_cast<CallbackContext*>(context);
+    if (callback_context && callback_context->user_callback) {
+        callback_context->user_callback(callback_context->user_context);
+    }
+    delete callback_context;
+}
+
+// Command buffer functions
+MetalCommandBuffer* metal_command_queue_create_command_buffer(MetalCommandQueue* queue) {
+    if (!queue) return nullptr;
+    
+    MTL::CommandQueue* mtlQueue = reinterpret_cast<MTL::CommandQueue*>(queue);
+    MTL::CommandBuffer* cmdBuffer = mtlQueue->commandBuffer();
+    
+    return reinterpret_cast<MetalCommandBuffer*>(cmdBuffer);
+}
+
+void metal_command_buffer_commit(MetalCommandBuffer* buffer) {
+    if (!buffer) return;
+    
+    MTL::CommandBuffer* mtlBuffer = reinterpret_cast<MTL::CommandBuffer*>(buffer);
+    mtlBuffer->commit();
+}
+
+void metal_command_buffer_commit_with_callback(MetalCommandBuffer* buffer, MetalCommandBufferCallback callback, void* context) {
+    if (!buffer || !callback) return;
+    
+    MTL::CommandBuffer* mtlBuffer = reinterpret_cast<MTL::CommandBuffer*>(buffer);
+    
+    // Create a context that holds both the user callback and user context
+    CallbackContext* callback_context = new CallbackContext{callback, context};
+    
+    // Set the completion handler using a C++ lambda that calls our static function
+    mtlBuffer->addCompletedHandler([callback_context](MTL::CommandBuffer*) {
+        metal_completion_handler(callback_context);
+    });
+    
+    mtlBuffer->commit();
+}
+
+void metal_command_buffer_wait_until_completed(MetalCommandBuffer* buffer) {
+    if (!buffer) return;
+    
+    MTL::CommandBuffer* mtlBuffer = reinterpret_cast<MTL::CommandBuffer*>(buffer);
+    mtlBuffer->waitUntilCompleted();
+}
+
+int metal_command_buffer_get_status(MetalCommandBuffer* buffer) {
+    if (!buffer) return -1;
+    
+    MTL::CommandBuffer* mtlBuffer = reinterpret_cast<MTL::CommandBuffer*>(buffer);
+    return static_cast<int>(mtlBuffer->status());
+}
+
+void metal_command_buffer_release(MetalCommandBuffer* buffer) {
+    if (buffer) {
+        MTL::CommandBuffer* mtlBuffer = reinterpret_cast<MTL::CommandBuffer*>(buffer);
+        mtlBuffer->release();
+    }
+}
+
+// Compute command encoder functions
+MetalComputeCommandEncoder* metal_command_buffer_create_compute_command_encoder(MetalCommandBuffer* buffer) {
+    if (!buffer) return nullptr;
+    
+    MTL::CommandBuffer* mtlBuffer = reinterpret_cast<MTL::CommandBuffer*>(buffer);
+    MTL::ComputeCommandEncoder* encoder = mtlBuffer->computeCommandEncoder();
+    
+    return reinterpret_cast<MetalComputeCommandEncoder*>(encoder);
+}
+
+void metal_compute_command_encoder_set_compute_pipeline_state(MetalComputeCommandEncoder* encoder, MetalComputePipelineState* state) {
+    if (!encoder || !state) return;
+    
+    MTL::ComputeCommandEncoder* mtlEncoder = reinterpret_cast<MTL::ComputeCommandEncoder*>(encoder);
+    MTL::ComputePipelineState* mtlState = reinterpret_cast<MTL::ComputePipelineState*>(state);
+    
+    mtlEncoder->setComputePipelineState(mtlState);
+}
+
+void metal_compute_command_encoder_set_buffer(MetalComputeCommandEncoder* encoder, MetalBuffer* buffer, unsigned long offset, unsigned int index) {
+    if (!encoder || !buffer) return;
+    
+    MTL::ComputeCommandEncoder* mtlEncoder = reinterpret_cast<MTL::ComputeCommandEncoder*>(encoder);
+    MTL::Buffer* mtlBuffer = reinterpret_cast<MTL::Buffer*>(buffer);
+    
+    mtlEncoder->setBuffer(mtlBuffer, offset, index);
+}
+
+void metal_compute_command_encoder_dispatch_threads(MetalComputeCommandEncoder* encoder, unsigned int threadCountX, unsigned int threadCountY, unsigned int threadCountZ) {
+    if (!encoder) return;
+    
+    MTL::ComputeCommandEncoder* mtlEncoder = reinterpret_cast<MTL::ComputeCommandEncoder*>(encoder);
+    MTL::Size gridSize = MTL::Size(threadCountX, threadCountY, threadCountZ);
+    
+    mtlEncoder->dispatchThreads(gridSize, MTL::Size(16, 1, 1)); // Using a default threadgroup size of 16x1x1
+}
+
+void metal_compute_command_encoder_end_encoding(MetalComputeCommandEncoder* encoder) {
+    if (!encoder) return;
+    
+    MTL::ComputeCommandEncoder* mtlEncoder = reinterpret_cast<MTL::ComputeCommandEncoder*>(encoder);
+    mtlEncoder->endEncoding();
+}
+
+void metal_compute_command_encoder_release(MetalComputeCommandEncoder* encoder) {
+    if (encoder) {
+        MTL::ComputeCommandEncoder* mtlEncoder = reinterpret_cast<MTL::ComputeCommandEncoder*>(encoder);
+        mtlEncoder->release();
+    }
+}
+
 void metal_cleanup(void) {
     // Any cleanup if needed
 }
