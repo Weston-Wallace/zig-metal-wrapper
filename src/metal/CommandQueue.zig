@@ -16,7 +16,7 @@ const CommandQueue = @This();
 
 test "CommandQueue functionality" {
     const metal = @import("../metal.zig");
-    const Device = @import("device.zig").Device;
+    const Device = @import("Device.zig");
 
     try metal.init();
     defer metal.deinit();

@@ -2,6 +2,7 @@ const std = @import("std");
 const c = @cImport({
     @cInclude("metal_wrapper.h");
 });
+const Buffer = @This();
 
 const MetalError = @import("error.zig").MetalError;
 
@@ -16,9 +17,6 @@ pub const ResourceStorageMode = enum(c_uint) {
     /// Transient render targets
     Memoryless = c.ResourceStorageModeMemoryless,
 };
-
-/// A Metal buffer resource
-pub const Buffer = @This();
 
 /// Handle to the underlying Metal buffer
 handle: ?*c.MetalBuffer,
