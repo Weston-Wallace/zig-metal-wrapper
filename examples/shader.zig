@@ -19,10 +19,6 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    // Initialize Metal
-    try metal.init();
-    defer metal.deinit();
-
     // Create a Metal device
     var device = try metal.Device.createDefault();
     defer device.deinit();
@@ -87,43 +83,43 @@ pub fn main() !void {
     var pipeline_state = try function.createComputePipelineState();
     defer pipeline_state.deinit();
     try stdout.print("Compute pipeline state created\n", .{});
-    
+
     // Create a command queue
     try stdout.print("Creating command queue...\n", .{});
     var command_queue = try device.createCommandQueue();
     defer command_queue.deinit();
-    
+
     // Create a command buffer
     try stdout.print("Creating command buffer...\n", .{});
     var command_buffer = try command_queue.createCommandBuffer();
     defer command_buffer.deinit();
-    
+
     // Create a compute command encoder
     try stdout.print("Creating compute command encoder...\n", .{});
     var encoder = try command_buffer.createComputeCommandEncoder();
     defer encoder.deinit();
-    
+
     // Set the compute pipeline state
     encoder.setComputePipelineState(pipeline_state);
-    
+
     // Set the buffer
     encoder.setBuffer(buffer, 0, 0);
-    
+
     // Dispatch threads - we have 4 elements
     try stdout.print("Dispatching compute work...\n", .{});
     encoder.dispatchThreads(4, 1, 1);
-    
+
     // End encoding
     encoder.endEncoding();
-    
+
     // Commit the command buffer
     try stdout.print("Committing command buffer...\n", .{});
     command_buffer.commit();
-    
+
     // Wait for completion
     try stdout.print("Waiting for completion...\n", .{});
     command_buffer.waitUntilCompleted();
-    
+
     // Read back the results
     try stdout.print("Reading back results...\n", .{});
     try stdout.print("Final values: ", .{});
@@ -131,13 +127,14 @@ pub fn main() !void {
         try stdout.print("{d:.1} ", .{value});
     }
     try stdout.print("\n", .{});
-    
+
     // Verify the results - each value should be doubled
     try stdout.print("Verifying results...\n", .{});
-    if (float_data[0] == 2.0 and 
-        float_data[1] == 4.0 and 
-        float_data[2] == 6.0 and 
-        float_data[3] == 8.0) {
+    if (float_data[0] == 2.0 and
+        float_data[1] == 4.0 and
+        float_data[2] == 6.0 and
+        float_data[3] == 8.0)
+    {
         try stdout.print("✅ Compute shader executed successfully!\n", .{});
     } else {
         try stdout.print("❌ Compute shader results don't match expected values.\n", .{});

@@ -35,7 +35,3 @@ pub fn create(function: Function) MetalError!ComputePipelineState {
 pub fn deinit(self: *ComputePipelineState) void {
     c.metal_compute_pipeline_state_release(self.handle);
 }
-
-test "computePipelineState.create" {
-    // This would need a valid function to test with, mocking is better
-}

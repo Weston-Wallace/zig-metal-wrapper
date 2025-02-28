@@ -5,11 +5,6 @@
 #include "metal_wrapper.h"
 #include <cstring>
 
-int metal_init(void) {
-    // Any initialization if needed
-    return 1; // Success
-}
-
 MetalDevice* metal_create_default_device(void) {
     return reinterpret_cast<MetalDevice*>(MTL::CreateSystemDefaultDevice());
 }
@@ -319,8 +314,4 @@ void metal_compute_command_encoder_release(MetalComputeCommandEncoder* encoder) 
         MTL::ComputeCommandEncoder* mtlEncoder = reinterpret_cast<MTL::ComputeCommandEncoder*>(encoder);
         mtlEncoder->release();
     }
-}
-
-void metal_cleanup(void) {
-    // Any cleanup if needed
 }

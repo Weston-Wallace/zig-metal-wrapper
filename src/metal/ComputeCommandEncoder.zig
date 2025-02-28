@@ -22,12 +22,7 @@ pub fn setBuffer(self: ComputeCommandEncoder, buffer: Buffer, offset: usize, ind
 
 /// Dispatch threads for the compute operation
 pub fn dispatchThreads(self: ComputeCommandEncoder, thread_count_x: u32, thread_count_y: u32, thread_count_z: u32) void {
-    c.metal_compute_command_encoder_dispatch_threads(
-        self.handle,
-        thread_count_x,
-        thread_count_y,
-        thread_count_z
-    );
+    c.metal_compute_command_encoder_dispatch_threads(self.handle, thread_count_x, thread_count_y, thread_count_z);
 }
 
 /// End the compute command encoding
@@ -38,8 +33,4 @@ pub fn endEncoding(self: ComputeCommandEncoder) void {
 /// Release the compute command encoder
 pub fn deinit(self: *ComputeCommandEncoder) void {
     c.metal_compute_command_encoder_release(self.handle);
-}
-
-test "computeCommandEncoder.dispatch" {
-    // This would need a valid encoder to test with
 }

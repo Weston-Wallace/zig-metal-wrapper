@@ -75,11 +75,7 @@ pub fn copyFromSlice(self: Buffer, data: []const u8) MetalError!void {
 }
 
 test "Buffer functionality" {
-    const metal = @import("../metal.zig");
     const Device = @import("Device.zig");
-
-    try metal.init();
-    defer metal.deinit();
 
     var device = try Device.createDefault();
     defer device.deinit();

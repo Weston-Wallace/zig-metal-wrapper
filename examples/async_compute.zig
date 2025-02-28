@@ -21,11 +21,11 @@ var waiting_thread: ?std.Thread = null;
 fn computeCompletionCallback(context: ?*anyopaque) void {
     _ = context; // We don't use the context in this example
     completion_signaled = true;
-    
+
     if (waiting_thread) |thread| {
         thread.detach();
     }
-    
+
     // Print that the operation is complete
     std.debug.print("🎉 Async compute operation completed!\n", .{});
 }
@@ -35,10 +35,6 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
-
-    // Initialize Metal
-    try metal.init();
-    defer metal.deinit();
 
     // Create a Metal device
     var device = try metal.Device.createDefault();
@@ -75,7 +71,7 @@ pub fn main() !void {
     var pipeline_state = try function.createComputePipelineState();
     defer pipeline_state.deinit();
     try stdout.print("Compute pipeline state created\n", .{});
-    
+
     // Create a buffer with some test data
     const buffer_size = 4 * @sizeOf(f32); // 4 floats
     var buffer = try device.createBuffer(buffer_size, .Shared);
@@ -99,77 +95,78 @@ pub fn main() !void {
         try stdout.print("{d:.1} ", .{value});
     }
     try stdout.print("\n", .{});
-    
+
     // Create a command queue
     try stdout.print("Creating command queue...\n", .{});
     var command_queue = try device.createCommandQueue();
     defer command_queue.deinit();
-    
+
     // Create a command buffer
     try stdout.print("Creating command buffer...\n", .{});
     var command_buffer = try command_queue.createCommandBuffer();
     defer command_buffer.deinit();
-    
+
     // Create a compute command encoder
     try stdout.print("Creating compute command encoder...\n", .{});
     var encoder = try command_buffer.createComputeCommandEncoder();
     defer encoder.deinit();
-    
+
     // Set the compute pipeline state
     encoder.setComputePipelineState(pipeline_state);
-    
+
     // Set the buffer
     encoder.setBuffer(buffer, 0, 0);
-    
+
     // Dispatch threads - we have 4 elements
     try stdout.print("Dispatching compute work...\n", .{});
     encoder.dispatchThreads(4, 1, 1);
-    
+
     // End encoding
     encoder.endEncoding();
-    
+
     // Setup completion callback
     var completion_callback = metal.CommandBuffer.CompletionCallback{
         .callback = computeCompletionCallback,
         .context = null,
     };
-    
+
     // Commit the command buffer with callback
     try stdout.print("Committing command buffer with async callback...\n", .{});
     command_buffer.commitWithCallback(&completion_callback);
-    
+
     // Wait a bit to show we're continuing execution while GPU works
     try stdout.print("Command buffer committed, continuing CPU work while GPU executes...\n", .{});
-    
+
     // Do some "work" on the CPU side
     for (0..3) |i| {
         try stdout.print("CPU doing work cycle {d}...\n", .{i + 1});
         std.time.sleep(std.time.ns_per_s / 2); // Sleep for 0.5 seconds
-        
+
         // Check if the GPU work has completed
         const status = command_buffer.getStatus();
         try stdout.print("Command buffer status: {any}\n", .{status});
     }
-    
+
     // If still not complete, wait for completion
     if (!completion_signaled) {
         try stdout.print("Still waiting for GPU work to complete...\n", .{});
         command_buffer.waitUntilCompleted();
     }
-    
+
     // Print final values
     try stdout.print("Final values: ", .{});
     for (float_data) |value| {
         try stdout.print("{d:.1} ", .{value});
     }
     try stdout.print("\n", .{});
-    
+
     // Verify the results
     try stdout.print("Verifying results...\n", .{});
-    if (float_data[0] == 2.0 and 
-        float_data[1] == 4.0 and 
-        float_data[2] == 6.0 and 
-        float_data[3] == 8.0) {
+    if (float_data[0] == 2.0 and
+        float_data[1] == 4.0 and
+        float_data[2] == 6.0 and
+        float_data[3] == 8.0)
+    {
         try stdout.print("✅ Compute shader executed successfully!\n", .{});
     } else {
         try stdout.print("❌ Compute shader results don't match expected values.\n", .{});

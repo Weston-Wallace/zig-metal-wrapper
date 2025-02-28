@@ -14,7 +14,7 @@ pub fn createCommandBuffer(self: CommandQueue) MetalError!CommandBuffer {
     if (buffer_handle == null) {
         return MetalError.CommandBufferCreationFailed;
     }
-    
+
     return CommandBuffer{
         .handle = buffer_handle.?,
     };
@@ -28,11 +28,7 @@ pub fn deinit(self: CommandQueue) void {
 const CommandQueue = @This();
 
 test "CommandQueue functionality" {
-    const metal = @import("../metal.zig");
     const Device = @import("Device.zig");
-
-    try metal.init();
-    defer metal.deinit();
 
     var device = try Device.createDefault();
     defer device.deinit();

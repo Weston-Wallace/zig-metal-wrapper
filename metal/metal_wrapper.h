@@ -23,9 +23,6 @@ typedef enum {
     ResourceStorageModeMemoryless = 3
 } ResourceStorageMode;
 
-// Initialize Metal
-int metal_init(void);
-
 // Create a default Metal device
 MetalDevice* metal_create_default_device(void);
 
@@ -77,9 +74,6 @@ void metal_compute_command_encoder_set_buffer(MetalComputeCommandEncoder* encode
 void metal_compute_command_encoder_dispatch_threads(MetalComputeCommandEncoder* encoder, unsigned int threadCountX, unsigned int threadCountY, unsigned int threadCountZ);
 void metal_compute_command_encoder_end_encoding(MetalComputeCommandEncoder* encoder);
 void metal_compute_command_encoder_release(MetalComputeCommandEncoder* encoder);
-
-// Clean up Metal
-void metal_cleanup(void);
 
 #ifdef __cplusplus
 }

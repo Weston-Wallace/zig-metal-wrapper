@@ -34,7 +34,7 @@ pub fn createFromSource(device: Device, source: []const u8, allocator: std.mem.A
             utils.freeCString(error_ptr.?);
 
             return .{
-                .library = Library{ 
+                .library = Library{
                     .handle = null,
                     .device_handle = device.handle,
                 },
@@ -45,7 +45,7 @@ pub fn createFromSource(device: Device, source: []const u8, allocator: std.mem.A
     }
 
     return .{
-        .library = Library{ 
+        .library = Library{
             .handle = library_ptr,
             .device_handle = device.handle,
         },
@@ -64,7 +64,7 @@ pub fn getFunction(self: Library, name: []const u8, allocator: std.mem.Allocator
         return MetalError.FunctionNotFound;
     }
 
-    return Function{ 
+    return Function{
         .handle = function_ptr,
         .device_handle = self.device_handle,
     };
@@ -78,11 +78,7 @@ pub fn deinit(self: Library) void {
 const Library = @This();
 
 test "Library from source" {
-    const metal = @import("../metal.zig");
     const allocator = std.testing.allocator;
-
-    try metal.init();
-    defer metal.deinit();
 
     var device = try Device.createDefault();
     defer device.deinit();

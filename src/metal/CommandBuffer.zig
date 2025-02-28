@@ -33,7 +33,7 @@ pub fn createComputeCommandEncoder(self: CommandBuffer) MetalError!ComputeComman
     if (encoder_handle == null) {
         return MetalError.CommandEncoderCreationFailed;
     }
-    
+
     return ComputeCommandEncoder{
         .handle = encoder_handle.?,
     };
@@ -75,8 +75,4 @@ pub fn getStatus(self: CommandBuffer) Status {
 /// Release the command buffer
 pub fn deinit(self: *CommandBuffer) void {
     c.metal_command_buffer_release(self.handle);
-}
-
-test "commandBuffer.createComputeCommandEncoder" {
-    // This would need a valid command buffer to test with
 }

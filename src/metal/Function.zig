@@ -49,13 +49,9 @@ pub fn createComputePipelineState(self: Function) MetalError!ComputePipelineStat
 const Function = @This();
 
 test "Function basic test" {
-    const metal = @import("../metal.zig");
     const Device = @import("Device.zig");
     const Library = @import("Library.zig");
     const allocator = std.testing.allocator;
-
-    try metal.init();
-    defer metal.deinit();
 
     var device = try Device.createDefault();
     defer device.deinit();

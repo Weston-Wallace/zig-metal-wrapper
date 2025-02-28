@@ -99,10 +99,6 @@ test "Device basic functionality" {
 }
 
 test "Buffer creation" {
-    const metal = @import("../metal.zig");
-    try metal.init();
-    defer metal.deinit();
-
     var device = try Device.createDefault();
     defer device.deinit();
 

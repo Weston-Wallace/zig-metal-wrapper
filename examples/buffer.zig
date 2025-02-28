@@ -7,10 +7,6 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    // Initialize Metal
-    try metal.init();
-    defer metal.deinit();
-
     // Create a Metal device
     var device = try metal.Device.createDefault();
     defer device.deinit();

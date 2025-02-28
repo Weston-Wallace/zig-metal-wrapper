@@ -26,13 +26,9 @@ pub fn main() !void {
 
     // Initialize Metal
     try stdout.print("=== Metal Error Handling Example ===\n\n", .{});
-    try stdout.print("Step 1: Initializing Metal...\n", .{});
-    try metal.init();
-    defer metal.deinit();
-    try stdout.print("✅ Metal initialized successfully\n\n", .{});
 
     // Create a Metal device
-    try stdout.print("Step 2: Creating Metal device...\n", .{});
+    try stdout.print("Step 1: Creating Metal device...\n", .{});
     var device = try metal.Device.createDefault();
     defer device.deinit();
 
@@ -42,7 +38,7 @@ pub fn main() !void {
     try stdout.print("✅ Metal device created: {s}\n\n", .{name});
 
     // Demonstrate Buffer Error Handling
-    try stdout.print("Step 3: Demonstrating Buffer Error Handling...\n", .{});
+    try stdout.print("Step 2: Demonstrating Buffer Error Handling...\n", .{});
 
     try stdout.print("  Attempt to create 0-sized buffer (should fail):\n", .{});
     const buffer_result = device.createBuffer(0, .Shared);
@@ -55,7 +51,7 @@ pub fn main() !void {
     try stdout.print("✅ Valid buffer created successfully\n\n", .{});
 
     // Demonstrate Shader Compilation Error Handling
-    try stdout.print("Step 4: Demonstrating Shader Compilation Error Handling...\n", .{});
+    try stdout.print("Step 3: Demonstrating Shader Compilation Error Handling...\n", .{});
 
     try stdout.print("  Attempt to compile invalid shader:\n", .{});
 
