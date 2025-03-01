@@ -53,10 +53,11 @@ fn createMetalLibrary(b: *std.Build, target: std.Build.ResolvedTarget, optimize:
     metal_lib.addIncludePath(b.path("metal"));
 
     metal_lib.addCSourceFile(.{
-        .file = b.path("metal/metal_wrapper.cpp"),
+        .file = b.path("metal/metal_wrapper.mm"),
         .flags = &[_][]const u8{
             "-std=c++17",
             "-fno-rtti",
+            "-fno-objc-arc", // Enable Automatic Reference Counting
         },
     });
 
