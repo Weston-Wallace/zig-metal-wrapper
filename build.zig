@@ -13,13 +13,10 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // Create and configure the Metal library
     const metal_lib = createMetalLibrary(b, target, optimize);
 
-    // Create the Metal module
     const metal_module = createMetalModule(b, metal_lib);
 
-    // Create examples
     inline for (examples) |example| {
         const name = std.fmt.comptimePrint("{s}-example", .{example});
         const source_path = std.fmt.comptimePrint("examples/{s}.zig", .{example});
@@ -37,7 +34,6 @@ pub fn build(b: *std.Build) void {
         );
     }
 
-    // Add unit tests
     createTests(b, metal_lib, target, optimize);
 }
 
@@ -49,25 +45,19 @@ fn createMetalLibrary(b: *std.Build, target: std.Build.ResolvedTarget, optimize:
         .optimize = optimize,
     });
 
-    // Add include path for our wrapper header
     metal_lib.addIncludePath(b.path("metal"));
 
     metal_lib.addCSourceFile(.{
-        .file = b.path("metal/metal_wrapper.mm"),
+        .file = b.path("metal/metal_wrapper.m"),
         .flags = &[_][]const u8{
-            "-std=c++17",
             "-fno-rtti",
-            "-fno-objc-arc", // Enable Automatic Reference Counting
+            "-fno-objc-arc",
         },
     });
 
-    // Link frameworks
     linkMetalFrameworks(metal_lib);
-
     metal_lib.linkLibC();
-    metal_lib.linkLibCpp();
 
-    // Install the library
     b.installArtifact(metal_lib);
 
     return metal_lib;
@@ -78,10 +68,7 @@ fn createMetalModule(b: *std.Build, metal_lib: *std.Build.Step.Compile) *std.Bui
         .root_source_file = b.path("src/metal.zig"),
     });
 
-    // Add include path for the C header
     metal_module.addIncludePath(b.path("metal"));
-
-    // Link the library with the executable
     metal_module.linkLibrary(metal_lib);
 
     return metal_module;
@@ -104,13 +91,10 @@ fn createExample(
         .optimize = optimize,
     });
 
-    // Add the Metal module to the executable
     exe.root_module.addImport("metal", metal_module);
 
-    // Install the executable
     b.installArtifact(exe);
 
-    // Add run step
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
 
@@ -128,10 +112,8 @@ fn createTests(b: *std.Build, metal_lib: *std.Build.Step.Compile, target: std.Bu
     lib_tests.addIncludePath(b.path("metal"));
     lib_tests.linkLibrary(metal_lib);
 
-    // Link necessary frameworks and libraries
     linkMetalFrameworks(lib_tests);
     lib_tests.linkLibC();
-    lib_tests.linkLibCpp();
 
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&b.addRunArtifact(lib_tests).step);

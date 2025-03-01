@@ -3,7 +3,7 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/QuartzCore.h>
 #include "metal_wrapper.h"
-#include <cstring>
+#include <string.h>
 
 MetalDevice* metal_create_default_device(void) {
     id<MTLDevice> device = MTLCreateSystemDefaultDevice();
@@ -11,7 +11,7 @@ MetalDevice* metal_create_default_device(void) {
 }
 
 const char* metal_device_get_name(MetalDevice* device) {
-    if (!device) return nullptr;
+    if (!device) return NULL;
     
     id<MTLDevice> mtlDevice = (id<MTLDevice>)device;
     NSString* name = [mtlDevice name];
@@ -23,7 +23,7 @@ const char* metal_device_get_name(MetalDevice* device) {
 }
 
 MetalCommandQueue* metal_device_create_command_queue(MetalDevice* device) {
-    if (!device) return nullptr;
+    if (!device) return NULL;
     
     id<MTLDevice> mtlDevice = (id<MTLDevice>)device;
     id<MTLCommandQueue> queue = [mtlDevice newCommandQueue];
@@ -44,7 +44,7 @@ void metal_device_release(MetalDevice* device) {
 }
 
 MetalBuffer* metal_device_create_buffer(MetalDevice* device, unsigned long length, ResourceStorageMode mode) {
-    if (!device) return nullptr;
+    if (!device) return NULL;
     
     id<MTLDevice> mtlDevice = (id<MTLDevice>)device;
     
@@ -71,7 +71,7 @@ MetalBuffer* metal_device_create_buffer(MetalDevice* device, unsigned long lengt
 }
 
 void* metal_buffer_get_contents(MetalBuffer* buffer) {
-    if (!buffer) return nullptr;
+    if (!buffer) return NULL;
     
     id<MTLBuffer> mtlBuffer = (id<MTLBuffer>)buffer;
     return [mtlBuffer contents];
@@ -99,14 +99,14 @@ void metal_buffer_release(MetalBuffer* buffer) {
 
 // Shader management functions
 MetalLibrary* metal_device_create_library_from_source(MetalDevice* device, const char* source, char** error_msg) {
-    if (!device || !source) return nullptr;
+    if (!device || !source) return NULL;
     
     id<MTLDevice> mtlDevice = (id<MTLDevice>)device;
     NSError* error = nil;
     
     // Create a NSString from the C string
     NSString* sourceStr = [NSString stringWithUTF8String:source];
-    if (!sourceStr) return nullptr;
+    if (!sourceStr) return NULL;
     
     // Create a Metal library from the source string
     MTLCompileOptions* options = [[MTLCompileOptions alloc] init];
@@ -119,18 +119,18 @@ MetalLibrary* metal_device_create_library_from_source(MetalDevice* device, const
     if (error && error_msg) {
         const char* errorStr = [[error localizedDescription] UTF8String];
         *error_msg = strdup(errorStr);
-        return nullptr;
+        return NULL;
     }
     
     return (MetalLibrary*)library;
 }
 
 MetalFunction* metal_library_get_function(MetalLibrary* library, const char* name) {
-    if (!library || !name) return nullptr;
+    if (!library || !name) return NULL;
     
     id<MTLLibrary> mtlLibrary = (id<MTLLibrary>)library;
     NSString* nameStr = [NSString stringWithUTF8String:name];
-    if (!nameStr) return nullptr;
+    if (!nameStr) return NULL;
     
     id<MTLFunction> function = [mtlLibrary newFunctionWithName:nameStr];
     
@@ -150,7 +150,7 @@ void metal_function_release(MetalFunction* function) {
 }
 
 const char* metal_function_get_name(MetalFunction* function) {
-    if (!function) return nullptr;
+    if (!function) return NULL;
     
     id<MTLFunction> mtlFunction = (id<MTLFunction>)function;
     const char* originalName = [[mtlFunction name] UTF8String];
@@ -162,7 +162,7 @@ const char* metal_function_get_name(MetalFunction* function) {
 
 // Compute pipeline functions
 MetalComputePipelineState* metal_device_new_compute_pipeline_state(MetalDevice* device, MetalFunction* function, char** error_msg) {
-    if (!device || !function) return nullptr;
+    if (!device || !function) return NULL;
     
     id<MTLDevice> mtlDevice = (id<MTLDevice>)device;
     id<MTLFunction> mtlFunction = (id<MTLFunction>)function;
@@ -175,7 +175,7 @@ MetalComputePipelineState* metal_device_new_compute_pipeline_state(MetalDevice* 
     if (error && error_msg) {
         const char* errorStr = [[error localizedDescription] UTF8String];
         *error_msg = strdup(errorStr);
-        return nullptr;
+        return NULL;
     }
     
     return (MetalComputePipelineState*)pipelineState;
@@ -195,7 +195,7 @@ typedef struct {
 
 // Command buffer functions
 MetalCommandBuffer* metal_command_queue_create_command_buffer(MetalCommandQueue* queue) {
-    if (!queue) return nullptr;
+    if (!queue) return NULL;
     
     id<MTLCommandQueue> mtlQueue = (id<MTLCommandQueue>)queue;
     id<MTLCommandBuffer> cmdBuffer = [mtlQueue commandBuffer];
@@ -256,7 +256,7 @@ void metal_command_buffer_release(MetalCommandBuffer* buffer) {
 
 // Compute command encoder functions
 MetalComputeCommandEncoder* metal_command_buffer_create_compute_command_encoder(MetalCommandBuffer* buffer) {
-    if (!buffer) return nullptr;
+    if (!buffer) return NULL;
     
     id<MTLCommandBuffer> mtlBuffer = (id<MTLCommandBuffer>)buffer;
     id<MTLComputeCommandEncoder> encoder = [mtlBuffer computeCommandEncoder];
