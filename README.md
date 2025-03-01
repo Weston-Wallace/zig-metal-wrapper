@@ -4,9 +4,7 @@ A Zig wrapper for Apple's Metal API, focusing on compute shaders.
 
 ## Prerequisites
 
-To use this library, you must:
-
-2. Have a macOS environment with Metal support.
+To use this library, you must have a macOS environment with Metal support.
 
 ## Current Status
 
