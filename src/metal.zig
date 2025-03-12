@@ -11,8 +11,6 @@ pub const ComputeCommandEncoder = @import("metal/ComputeCommandEncoder.zig");
 pub const MetalError = @import("metal/error.zig").MetalError;
 pub const freeCString = @import("metal/utils.zig").freeCString;
 
-// Re-export tests
 test {
-    // Run all tests from imported modules
     std.testing.refAllDeclsRecursive(@This());
 }

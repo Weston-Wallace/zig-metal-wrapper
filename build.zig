@@ -15,26 +15,22 @@ pub fn build(b: *std.Build) void {
 
     const metal_lib = createMetalLibrary(b, target, optimize);
 
-    const metal_module = createMetalModule(b, metal_lib);
+    const metal_module = addMetalModule(b, metal_lib, target, optimize);
 
     inline for (examples) |example| {
-        const name = std.fmt.comptimePrint("{s}-example", .{example});
-        const source_path = std.fmt.comptimePrint("examples/{s}.zig", .{example});
-        const run_step_name = std.fmt.comptimePrint("run-{s}-example", .{example});
-        const run_step_description = std.fmt.comptimePrint("Run the {s} example", .{example});
         createExample(
             b,
-            name,
-            source_path,
+            example ++ "-example",
+            "examples/" ++ example ++ ".zig",
             metal_module,
-            run_step_name,
-            run_step_description,
+            "run-" ++ example,
+            "Run the " ++ example ++ " example",
             target,
             optimize,
         );
     }
 
-    createTests(b, metal_lib, target, optimize);
+    createTests(b, metal_module);
 }
 
 fn createMetalLibrary(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode) *std.Build.Step.Compile {
@@ -63,9 +59,11 @@ fn createMetalLibrary(b: *std.Build, target: std.Build.ResolvedTarget, optimize:
     return metal_lib;
 }
 
-fn createMetalModule(b: *std.Build, metal_lib: *std.Build.Step.Compile) *std.Build.Module {
+fn addMetalModule(b: *std.Build, metal_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode) *std.Build.Module {
     const metal_module = b.addModule("metal", .{
         .root_source_file = b.path("src/metal.zig"),
+        .target = target,
+        .optimize = optimize,
     });
 
     metal_module.addIncludePath(b.path("metal"));
@@ -84,14 +82,17 @@ fn createExample(
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
 ) void {
-    const exe = b.addExecutable(.{
-        .name = name,
+    const mod = b.createModule(.{
         .root_source_file = b.path(source_path),
         .target = target,
         .optimize = optimize,
     });
+    mod.addImport("metal", metal_module);
 
-    exe.root_module.addImport("metal", metal_module);
+    const exe = b.addExecutable(.{
+        .name = name,
+        .root_module = mod,
+    });
 
     b.installArtifact(exe);
 
@@ -102,18 +103,13 @@ fn createExample(
     run_step.dependOn(&run_cmd.step);
 }
 
-fn createTests(b: *std.Build, metal_lib: *std.Build.Step.Compile, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode) void {
+fn createTests(b: *std.Build, metal_module: *std.Build.Module) void {
     const lib_tests = b.addTest(.{
-        .root_source_file = b.path("src/metal.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = metal_module,
     });
 
-    lib_tests.addIncludePath(b.path("metal"));
-    lib_tests.linkLibrary(metal_lib);
-
-    linkMetalFrameworks(lib_tests);
-    lib_tests.linkLibC();
+    // linkMetalFrameworks(lib_tests);
+    // lib_tests.linkLibC();
 
     const test_step = b.step("test", "Run library tests");
     test_step.dependOn(&b.addRunArtifact(lib_tests).step);

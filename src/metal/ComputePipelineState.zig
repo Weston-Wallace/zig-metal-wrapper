@@ -15,7 +15,7 @@ pub fn create(function: Function) MetalError!ComputePipelineState {
     const handle = c.metal_device_new_compute_pipeline_state(
         function.device_handle,
         function.handle,
-        &error_msg,
+        @ptrCast(&error_msg),
     );
 
     if (handle == null) {

@@ -58,7 +58,7 @@ test "Library from source" {
     ;
 
     // Create library
-    const result = try Library.createFromSource(device, shader_source, allocator);
+    const result = try device.createLibraryFromSource(shader_source, allocator);
     if (result.error_msg) |err_msg| {
         defer allocator.free(err_msg);
         std.debug.print("Shader compilation error: {s}\n", .{err_msg});

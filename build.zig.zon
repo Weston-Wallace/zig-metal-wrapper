@@ -1,6 +1,6 @@
 .{
-    .name = "zig-metal-wrapper",
-    .version = "0.0.1",
+    .name = .zmw,
+    .version = "0.1.1",
     .paths = .{
         "build.zig",
         "build.zig.zon",
@@ -10,4 +10,5 @@
         "metal",
         "shaders",
     },
+    .fingerprint = 0xb815c5e1f0fd3159,
 }

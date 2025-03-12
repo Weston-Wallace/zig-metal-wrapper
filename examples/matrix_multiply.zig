@@ -31,7 +31,7 @@ const shader_source =
 
 /// Initialize a matrix with random values
 fn initMatrix(matrix: []f32, seed: u64) void {
-    var rng = std.rand.DefaultPrng.init(seed);
+    var rng = std.Random.DefaultPrng.init(seed);
     var random = rng.random();
     for (0..matrix.len) |i| {
         matrix[i] = random.float(f32) * 10.0;

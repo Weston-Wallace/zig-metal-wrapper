@@ -50,7 +50,6 @@ const Function = @This();
 
 test "Function basic test" {
     const Device = @import("Device.zig");
-    const Library = @import("Library.zig");
     const allocator = std.testing.allocator;
 
     var device = try Device.createDefault();
@@ -69,7 +68,7 @@ test "Function basic test" {
     ;
 
     // Create library
-    const result = try Library.createFromSource(device, shader_source, allocator);
+    const result = try device.createLibraryFromSource(shader_source, allocator);
     if (result.error_msg) |err_msg| {
         defer allocator.free(err_msg);
         return error.ShaderCompilationFailed;
