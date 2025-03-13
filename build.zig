@@ -1,12 +1,13 @@
 const std = @import("std");
 
 const examples = [_][]const u8{
-    "buffer",
-    "device_name",
-    "shader",
     "async_compute",
-    "matrix_multiply",
+    "buffer",
+    "constant",
+    "device_name",
     "error_handling",
+    "matrix_multiply",
+    "shader",
 };
 
 pub fn build(b: *std.Build) void {

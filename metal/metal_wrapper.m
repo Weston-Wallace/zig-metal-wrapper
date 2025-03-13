@@ -282,6 +282,13 @@ void metal_compute_command_encoder_set_buffer(MetalComputeCommandEncoder* encode
     [mtlEncoder setBuffer:mtlBuffer offset:offset atIndex:index];
 }
 
+void metal_compute_command_encoder_set_bytes(MetalComputeCommandEncoder* encoder, const void* bytes, unsigned long length, unsigned int index) {
+    if (!encoder || !bytes) return;
+    id<MTLComputeCommandEncoder> mtlEncoder = (id<MTLComputeCommandEncoder>)encoder;
+
+    [mtlEncoder setBytes:bytes length:length atIndex:index];
+}
+
 void metal_compute_command_encoder_dispatch_threads(MetalComputeCommandEncoder* encoder, unsigned int threadCountX, unsigned int threadCountY, unsigned int threadCountZ) {
     if (!encoder) return;
     

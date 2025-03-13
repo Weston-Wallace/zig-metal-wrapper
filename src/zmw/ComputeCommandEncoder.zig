@@ -20,6 +20,11 @@ pub fn setBuffer(self: ComputeCommandEncoder, buffer: Buffer, offset: usize, ind
     c.metal_compute_command_encoder_set_buffer(self.handle, buffer.handle, offset, index);
 }
 
+/// Set bytes as an argument for the compute function
+pub fn setBytes(self: ComputeCommandEncoder, bytes: *const anyopaque, length: usize, index: u32) void {
+    c.metal_compute_command_encoder_set_bytes(self.handle, bytes, length, index);
+}
+
 /// Dispatch threads for the compute operation
 pub fn dispatchThreads(self: ComputeCommandEncoder, thread_count_x: u32, thread_count_y: u32, thread_count_z: u32) void {
     c.metal_compute_command_encoder_dispatch_threads(self.handle, thread_count_x, thread_count_y, thread_count_z);

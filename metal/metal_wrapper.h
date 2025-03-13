@@ -71,6 +71,7 @@ void metal_command_buffer_release(MetalCommandBuffer* buffer);
 MetalComputeCommandEncoder* metal_command_buffer_create_compute_command_encoder(MetalCommandBuffer* buffer);
 void metal_compute_command_encoder_set_compute_pipeline_state(MetalComputeCommandEncoder* encoder, MetalComputePipelineState* state);
 void metal_compute_command_encoder_set_buffer(MetalComputeCommandEncoder* encoder, MetalBuffer* buffer, unsigned long offset, unsigned int index);
+void metal_compute_command_encoder_set_bytes(MetalComputeCommandEncoder* encoder, const void* bytes, unsigned long length, unsigned int index);
 void metal_compute_command_encoder_dispatch_threads(MetalComputeCommandEncoder* encoder, unsigned int threadCountX, unsigned int threadCountY, unsigned int threadCountZ);
 void metal_compute_command_encoder_end_encoding(MetalComputeCommandEncoder* encoder);
 void metal_compute_command_encoder_release(MetalComputeCommandEncoder* encoder);
