@@ -1,5 +1,5 @@
 const std = @import("std");
-const metal = @import("metal");
+const zmw = @import("zmw");
 
 /// Matrix multiplication compute shader
 const shader_source =
@@ -100,7 +100,7 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     // Create a Metal device
-    var device = try metal.Device.createDefault();
+    var device = try zmw.Device.createDefault();
     defer device.deinit();
 
     // Get device name

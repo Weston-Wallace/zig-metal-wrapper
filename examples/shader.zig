@@ -1,5 +1,5 @@
 const std = @import("std");
-const metal = @import("metal");
+const zmw = @import("zmw");
 
 // Simple compute shader that doubles each value in an array
 const shader_source =
@@ -20,7 +20,7 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     // Create a Metal device
-    var device = try metal.Device.createDefault();
+    var device = try zmw.Device.createDefault();
     defer device.deinit();
 
     // Get device name
@@ -57,7 +57,7 @@ pub fn main() !void {
     try runLibrary(file_library, device, allocator);
 }
 
-fn runLibrary(library: metal.Library, device: metal.Device, allocator: std.mem.Allocator) !void {
+fn runLibrary(library: zmw.Library, device: zmw.Device, allocator: std.mem.Allocator) !void {
     // Get the compute function
     try stdout.print("Getting compute function...\n", .{});
     var function = try library.getFunction("double_values", allocator);

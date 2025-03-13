@@ -1,5 +1,5 @@
 const std = @import("std");
-const metal = @import("metal");
+const zmw = @import("zmw");
 
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
@@ -8,7 +8,7 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     // Create a Metal device
-    var device = try metal.Device.createDefault();
+    var device = try zmw.Device.createDefault();
     defer device.deinit();
 
     // Get device name

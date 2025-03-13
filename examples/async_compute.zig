@@ -1,5 +1,5 @@
 const std = @import("std");
-const metal = @import("metal");
+const zmw = @import("zmw");
 
 /// Simple compute shader that doubles each value in an array
 const shader_source =
@@ -37,7 +37,7 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     // Create a Metal device
-    var device = try metal.Device.createDefault();
+    var device = try zmw.Device.createDefault();
     defer device.deinit();
 
     // Get device name
@@ -125,7 +125,7 @@ pub fn main() !void {
     encoder.endEncoding();
 
     // Setup completion callback
-    var completion_callback = metal.CommandBuffer.CompletionCallback{
+    var completion_callback = zmw.CommandBuffer.CompletionCallback{
         .callback = computeCompletionCallback,
         .context = null,
     };

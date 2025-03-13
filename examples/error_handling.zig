@@ -1,5 +1,5 @@
 const std = @import("std");
-const metal = @import("metal");
+const zmw = @import("zmw");
 
 /// Intentionally buggy compute shader to demonstrate error handling
 const invalid_shader_source =
@@ -29,7 +29,7 @@ pub fn main() !void {
 
     // Create a Metal device
     try stdout.print("Step 1: Creating Metal device...\n", .{});
-    var device = try metal.Device.createDefault();
+    var device = try zmw.Device.createDefault();
     defer device.deinit();
 
     // Get device name
@@ -89,7 +89,7 @@ pub fn main() !void {
     if (valid_result.error_msg) |err_msg| {
         defer allocator.free(err_msg);
         try stdout.print("❌ Valid shader compilation failed unexpectedly: {s}\n", .{err_msg});
-        return metal.MetalError.ShaderCompilationFailed;
+        return zmw.MetalError.ShaderCompilationFailed;
     }
 
     var library = valid_result.library;
